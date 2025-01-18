@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polling Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class=" text-dark font-sans flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-2xl p-6 shadow-md rounded-lg bg-white">
+        <h1 class="text-2xl font-bold text-center mb-6">Polling Unit Results</h1>
+
+        <div class="mb-6">
+            <label for="lgaSelect" class="block text-sm font-medium">Select LGA:</label>
+            <select id="lgaSelect" class="mt-2 w-full px-3 py-3 rounded-md  text-dark border border-gray-600 outline-none ">
+                <option value="">-- Select LGA --</option>
+                <option value="17">LGA 17</option>
+                <option value="18">LGA 18</option>
+                <option value="19">LGA 19</option>
+                <option value="19">LGA 34</option>
+                <option value="19">LGA 22</option>
+            </select>
+        </div>
+
+        <div id="results-container" class="space-y-4"></div>
+
+        <div id="loading" class="text-center hidden">
+            <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+        </div>
+
+    </div>
+    <div class="toast">
+        <div class="toast-content">
+            <svg height="20px" class="check" width="20px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+            viewBox="0 0 473.931 473.931" xml:space="preserve">
+       <circle style="fill:#FFC10E;" cx="236.966" cy="236.966" r="236.966"/>
+       <g>
+           <path style="fill:#333333;" d="M383.164,237.123c-1.332,80.699-65.514,144.873-146.213,146.206
+               c-80.702,1.332-144.907-67.52-146.206-146.206c-0.198-12.052-18.907-12.071-18.709,0c1.5,90.921,73.993,163.414,164.914,164.914
+               c90.929,1.5,163.455-76.25,164.922-164.914C402.071,225.052,383.362,225.071,383.164,237.123L383.164,237.123z"/>
+           <circle style="fill:#333333;" cx="164.937" cy="155.227" r="37.216"/>
+           <circle style="fill:#333333;" cx="305.664" cy="155.227" r="37.216"/>
+       </g>
+       </svg>
+
+
+            <div class="message">
+                <span class="text text-1">Hey There</span>
+                <span class="text text-1">Welcome to Question 2</span>
+            </div>
+        </div>
+        <i class="fa-solid fa-xmark close"></i>
+
+        <div class="progress"></div>
+    </div>
+
+
+    <script>
+        document.getElementById("lgaSelect").addEventListener("change", async function () {
+            const lgaId = this.value;
+            const resultsContainer = document.getElementById("results-container");
+            const loading = document.getElementById("loading");
+
+            resultsContainer.innerHTML = "";
+            if (!lgaId) return;
+
+            loading.classList.remove("hidden");
+
+            try {
+                const response = await fetch(`http://localhost/bincom/Http/GetSummedResults/index.php?lga_id=${lgaId}`);
+                const data = await response.json();
+                loading.classList.add("hidden");
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    resultsContainer.innerHTML = "<p class='text-center text-gray-400'>No results found.</p>";
+                    return;
+                }
+
+                resultsContainer.innerHTML = data.map(result => `
+                    <div class="result-item">
+                        <p class="text-lg font-semibold">${result.lga_name}</p>
+                        <p>Party: <span class="t">${result.party_abbreviation}</span></p>
+                        <p>Score: <span class="">${result.total_score}</span></p>
+                    </div>
+                `).join("");
+
+            } catch (error) {
+                loading.classList.add("hidden");
+                resultsContainer.innerHTML = "<p class='text-red-500 text-center'>Error fetching data. Try again later.</p>";
+            }
+        });
+    </script>
+
+    <script>
+
+window.addEventListener("load", () => {
+    const toast = document.querySelector(".toast"),
+          closeIcon = document.querySelector(".close"),
+          progress = document.querySelector(".progress");
+
+    // Show toast notification on page load
+    toast.classList.add('active');
+    progress.classList.add("active");
+
+    // Hide toast after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('active');
+    }, 5000);
+
+    // Ensure progress bar is removed after 5.3 seconds
+    setTimeout(() => {
+        progress.classList.remove("active");
+    }, 5300);
+
+    // Close toast when close button is clicked
+    closeIcon.addEventListener('click', () => {
+        toast.classList.remove('active');
+
+        setTimeout(() => {
+            progress.classList.remove("active");
+        }, 300);
+    });
+});
+
+    </script>
+
+</body>
+</html>

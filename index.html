@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Individual Polling Unit</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main__background">
+        <header class="header__container">
+            <h1 class="main__header__tag">Individual Polling Unit</h1>
+            <h2 class="sub__header__tag">Polling Unit ID: <span id="dynamic_id"></span></h2>
+        </header>
+
+        <main>
+            <div class="results__from__poll__container" id="result-poll">
+                <div class="main__results" id="results-container">
+
+                </div>
+            </div>
+
+            <form method="post">
+                <!-- <label for="">Please Choose a polling unit </label> -->
+                <input class="selector__input" type="number" placeholder=" Choose a polling unit" id="searchID">
+                <button type="button" >Search</button>
+            </form>
+
+            <a href="./SecondQuestion.html">Next Question</a>
+        </main>
+
+
+        
+    </div>
+    <div class="toast">
+        <div class="toast-content">
+            <svg height="20px" class="check" width="20px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+            viewBox="0 0 473.931 473.931" xml:space="preserve">
+       <circle style="fill:#FFC10E;" cx="236.966" cy="236.966" r="236.966"/>
+       <g>
+           <path style="fill:#333333;" d="M383.164,237.123c-1.332,80.699-65.514,144.873-146.213,146.206
+               c-80.702,1.332-144.907-67.52-146.206-146.206c-0.198-12.052-18.907-12.071-18.709,0c1.5,90.921,73.993,163.414,164.914,164.914
+               c90.929,1.5,163.455-76.25,164.922-164.914C402.071,225.052,383.362,225.071,383.164,237.123L383.164,237.123z"/>
+           <circle style="fill:#333333;" cx="164.937" cy="155.227" r="37.216"/>
+           <circle style="fill:#333333;" cx="305.664" cy="155.227" r="37.216"/>
+       </g>
+       </svg>
+
+
+            <div class="message">
+                <span class="text text-1">Hey There</span>
+                <span class="text text-1">Welcome to Question 1</span>
+            </div>
+        </div>
+        <i class="fa-solid fa-xmark close"></i>
+
+        <div class="progress"></div>
+    </div>
+
+    <script>
+       document.addEventListener("DOMContentLoaded", () => {
+    fetchResults(); 
+
+    const searchButton = document.querySelector("button");
+    searchButton.addEventListener("click", searchPollingUnit);
+});
+
+async function fetchResults() {
+    try {
+        const response = await fetch('http://localhost/bincom/Http/GetResults/');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        const resultsContainer = document.getElementById('results-container');
+        const PollID = document.getElementById('dynamic_id');
+
+        resultsContainer.innerHTML = '';
+        PollID.innerHTML = '';
+
+        data.forEach(result => {
+            const resultElement = document.createElement('div');
+            resultElement.classList.add('result-item');
+
+            PollID.innerHTML = result.uniqueid;
+
+            resultElement.innerHTML = `
+                <p>Polling unit Name: ${result.polling_unit_name}</p>
+                <p>Party Score: ${result.party_score}</p>
+                <p>Party Abbreviation: <span class="orange">${result.party_abbreviation}</span></p>
+                <p>Date Entered: ${result.date_entered}</p>
+            `;
+
+            resultsContainer.appendChild(resultElement);
+        });
+    } catch (error) {
+        console.error('Error fetching results:', error);
+    }
+}
+
+async function searchPollingUnit() {
+    const searchID = document.getElementById("searchID").value.trim();
+
+    if (!searchID) {
+        alert("Please enter a polling unit ID");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost/bincom/Http/SearchResults/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ polling_unit_id: searchID })
+        });
+
+        
+
+        const data = await response.json();
+const resultsContainer = document.getElementById("results-container");
+const PollID = document.getElementById("dynamic_id");
+
+resultsContainer.innerHTML = "";
+PollID.innerHTML = "";
+
+if (!Array.isArray(data) || data.length === 0) {
+    resultsContainer.innerHTML = "<p>No results found for this polling unit.</p>";
+    return;
+}
+
+if (data[0] && data[0].uniqueid) {
+    PollID.innerHTML = data.uniqueid;
+    console.log(data.uniqueid);
+}
+
+data.forEach(result => {
+    const resultElement = document.createElement("div");
+    resultElement.classList.add("result-item");
+
+    resultElement.innerHTML = `
+        <p>Polling Unit Name: ${result.polling_unit_name}</p>
+        <p>Party Score: ${result.party_score}</p>
+        <p>Party Abbreviation: <span class="orange">${result.party_abbreviation}</span></p>
+        <p>Date Entered: ${result.date_entered}</p>
+    `;
+
+    resultsContainer.appendChild(resultElement);
+});
+
+    } catch (error) {
+        console.error("Error fetching results:", error);
+    }
+}
+
+        window.onload = fetchResults;
+    </script>
+
+<script>
+
+    window.addEventListener("load", () => {
+        const toast = document.querySelector(".toast"),
+              closeIcon = document.querySelector(".close"),
+              progress = document.querySelector(".progress");
+    
+        // Show toast notification on page load
+        toast.classList.add('active');
+        progress.classList.add("active");
+    
+        setTimeout(() => {
+            toast.classList.remove('active');
+        }, 5000);
+    
+        setTimeout(() => {
+            progress.classList.remove("active");
+        }, 5300);
+    
+        closeIcon.addEventListener('click', () => {
+            toast.classList.remove('active');
+    
+            setTimeout(() => {
+                progress.classList.remove("active");
+            }, 300);
+        });
+    });
+    
+        </script>
+</body>
+</html>
